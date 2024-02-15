@@ -3,62 +3,77 @@ import './App.css';
 import Header from "./My_components/Header";
 import Todos from "./My_components/Todos";
 import Footer from "./My_components/Footer";
-
+import AddTodo from "./My_components/AddTodo";
+import About from "./My_components/About";
+import React, { useState, useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route
+} from "react-router-dom";
 
 function App() {
-  let todos = [
-    {
-      sno: 1,
-      title: "Go for shopping",
-      desc: "You need to go for shopping."
-    },
-    {
-      sno: 2,
-      title: "Go for walking",
-      desc: "You need to go for walking for your good health."
-    },
-    {
-      sno: 3,
-      title: "Meet friends",
-      desc: "You need to go to meet your friends."
+  let initTodo;
+  if (localStorage.getItem("todos") === null) {
+    initTodo = [];
+  }
+  else {
+    initTodo = JSON.parse(localStorage.getItem("todos"));
+  }
+
+  const OnDelete = (todo) => {
+    console.log("I am Deleted from todo", todo);
+
+    //Deleting this way in react does not work
+    //let index = todos.indexOf(todo);
+    //todos.splice(index, 1);
+
+    setTodos(todos.filter((e) => {
+      return e !== todo;
+    }));
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }
+
+  const addTodo = (title, desc) => {
+    console.log("Your Todo is added in the todo list", title, desc)
+    let sno;
+    if (todos.length === 0) {
+      sno = 0;
     }
-  ]
-  
+    else {
+      sno = todos[todos.length - 1].sno + 1;
+    }
+    const myTodo = {
+      sno: sno,
+      title: title,
+      desc: desc,
+    }
+    setTodos([...todos, myTodo]);
+    console.log(myTodo);
+  }
+
+  const [todos, setTodos] = useState(initTodo);
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos])
+
   return (
     <>
-    <Header title="My Todos List" searchbar={true}/>
-    <Todos todos={todos}/>
-    <Footer/>
+      <Router>
+        <Header title="My Todos List" searchbar={true} />
+        <Routes >
+          <Route path="/" element={
+            <React.Fragment>
+              <AddTodo addTodo={addTodo} />
+              <Todos todos={todos} OnDelete={OnDelete} />
+            </React.Fragment>
+          } />
+          <Route exact path="/about" element={<About />} />
+        </Routes>
+        <Footer />
+      </Router>
     </>
   );
 }
 
-export default App;
-
-
-
-
-
-
-
-
-
-
-/* <div class="App">
-      <header class="App-header">
-        <div>{myVariable}</div>
-        <img src={logo} class="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          class="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-*/
+export default App
